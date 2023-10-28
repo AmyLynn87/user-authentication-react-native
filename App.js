@@ -1,8 +1,13 @@
 //Libs
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Fragment, useContext } from "react";
+import { Fragment, useContext, useEffect, useState, useCallback } from "react";
 import { StatusBar } from "expo-status-bar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SplashScreen from "expo-splash-screen";
+import { View } from "react-native";
+import * as Font from "expo-font";
+import Entypo from "@expo/vector-icons/Entypo";
 
 //Local
 import LoginScreen from "./screens/LoginScreen";
@@ -68,12 +73,76 @@ function Navigation() {
   );
 }
 
+function Root() {
+  const [isTryingLogin, setIsTryingLogin] = useState(true);
+  const authCtx = useContext(AuthContext);
+
+  useEffect(() => {
+    async function prepare() {
+      try {
+        // Pre-load fonts, make any API calls you need to do here
+        await Font.loadAsync(Entypo.font);
+        const storedToken = await AsyncStorage.getItem("token");
+
+        if (storedToken) {
+          authCtx.authenticate(storedToken);
+        }
+        // Artificially delay for two seconds to simulate a slow loading
+        // experience. Please remove this if you copy and paste the code!
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        // Tell the application to render
+        setIsTryingLogin(false);
+      }
+    }
+
+    prepare();
+  }, []);
+
+  const onLayoutRootView = useCallback(async () => {
+    if (isTryingLogin) {
+      // This tells the splash screen to hide immediately! If we call this after
+      // `setAppIsReady`, then we may see a blank screen while the app is
+      // loading its initial state and rendering its first pixels. So instead,
+      // we hide the splash screen once we know the root view has already
+      // performed layout.
+      await SplashScreen.hideAsync();
+    }
+  }, [isTryingLogin]);
+
+  if (!isTryingLogin) {
+    return <Navigation />;
+  }
+
+  // useEffect(() => {
+  //   async function fetchToken() {
+  //     const storedToken = await AsyncStorage.getItem("token");
+
+  //     if (storedToken) {
+  //       authCtx.authenticate(storedToken);
+  //     }
+  //     setIsTryingLogin(false);
+  //   }
+  //   fetchToken();
+  // }, []);
+  return (
+    <View
+      style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+      onLayout={onLayoutRootView}
+    >
+      <Entypo name="rocket" size={30} />
+    </View>
+  );
+}
+
 export default function App() {
   return (
     <Fragment>
       <StatusBar style="light" />
       <AuthContextProvider>
-        <Navigation />
+        <Root />
       </AuthContextProvider>
     </Fragment>
   );
