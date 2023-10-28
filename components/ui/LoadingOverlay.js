@@ -1,4 +1,7 @@
+//Libs
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+
+//Local
 
 function LoadingOverlay({ message }) {
   return (
