@@ -116,17 +116,6 @@ function Root() {
     return <Navigation />;
   }
 
-  // useEffect(() => {
-  //   async function fetchToken() {
-  //     const storedToken = await AsyncStorage.getItem("token");
-
-  //     if (storedToken) {
-  //       authCtx.authenticate(storedToken);
-  //     }
-  //     setIsTryingLogin(false);
-  //   }
-  //   fetchToken();
-  // }, []);
   return (
     <View
       style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
